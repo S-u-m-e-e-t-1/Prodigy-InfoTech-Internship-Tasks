@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Solver</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        .grid-container { display: grid; grid-template-columns: repeat(9, 40px); gap: 2px; justify-content: center; margin: 20px; }
+        input { width: 40px; height: 40px; text-align: center; font-size: 20px; border: 1px solid #000; }
+        .predefined { background-color: #d3d3d3; font-weight: bold; }
+        .solved { background-color: #90ee90; }
+        button { margin-top: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>Sudoku Solver</h2>
+    <div class="grid-container" id="sudoku-grid"></div>
+    <button onclick="solveSudoku()">Solve</button>
+    <button onclick="loadSamplePuzzle()">Load Sample Puzzle</button>
+    
+    <script>
+        const grid = document.getElementById('sudoku-grid');
+        let board = Array(9).fill(null).map(() => Array(9).fill(0));
+
+        function createGrid() {
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    let cell = document.createElement('input');
+                    cell.type = 'text';
+                    cell.maxLength = 1;
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    cell.oninput = (e) => handleInput(e, row, col);
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function handleInput(e, row, col) {
+            let value = e.target.value;
+            if (/^[1-9]$/.test(value)) {
+                board[row][col] = parseInt(value);
+                e.target.classList.add('predefined');
+            } else {
+                board[row][col] = 0;
+                e.target.classList.remove('predefined');
+            }
+        }
+
+        function isValid(board, row, col, num) {
+            for (let i = 0; i < 9; i++) {
+                if (board[row][i] === num || board[i][col] === num) return false;
+                let boxRow = 3 * Math.floor(row / 3) + Math.floor(i / 3);
+                let boxCol = 3 * Math.floor(col / 3) + (i % 3);
+                if (board[boxRow][boxCol] === num) return false;
+            }
+            return true;
+        }
+
+        function solve(board) {
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    if (board[row][col] === 0) {
+                        for (let num = 1; num <= 9; num++) {
+                            if (isValid(board, row, col, num)) {
+                                board[row][col] = num;
+                                if (solve(board)) return true;
+                                board[row][col] = 0;
+                            }
+                        }
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function solveSudoku() {
+            if (solve(board)) {
+                let cells = document.querySelectorAll('.grid-container input');
+                cells.forEach(cell => {
+                    let row = cell.dataset.row, col = cell.dataset.col;
+                    if (!cell.classList.contains('predefined')) {
+                        cell.value = board[row][col];
+                        cell.classList.add('solved');
+                    }
+                });
+            } else {
+                alert('No solution exists!');
+            }
+        }
+
+        function loadSamplePuzzle() {
+            let sampleBoard = [
+                [5, 3, 0, 0, 7, 0, 0, 0, 0],
+                [6, 0, 0, 1, 9, 5, 0, 0, 0],
+                [0, 9, 8, 0, 0, 0, 0, 6, 0],
+                [8, 0, 0, 0, 6, 0, 0, 0, 3],
+                [4, 0, 0, 8, 0, 3, 0, 0, 1],
+                [7, 0, 0, 0, 2, 0, 0, 0, 6],
+                [0, 6, 0, 0, 0, 0, 2, 8, 0],
+                [0, 0, 0, 4, 1, 9, 0, 0, 5],
+                [0, 0, 0, 0, 8, 0, 0, 7, 9]
+            ];
+            let cells = document.querySelectorAll('.grid-container input');
+            cells.forEach(cell => {
+                let row = cell.dataset.row, col = cell.dataset.col;
+                let value = sampleBoard[row][col];
+                cell.value = value !== 0 ? value : '';
+                if (value !== 0) cell.classList.add('predefined');
+                board[row][col] = value;
+            });
+        }
+
+        createGrid();
+    </script>
+</body>
+</html>

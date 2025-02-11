@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Manager</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2196F3;
+            --background-color: #f5f7fa;
+            --text-color: #333;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 2em;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 6px;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .contact-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+        
+        .contact-item {
+            background: #fff;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eee;
+        }
+        
+        .contact-item button {
+            width: auto;
+            padding: 8px 15px;
+            margin: 0 5px;
+        }
+        
+        .contact-item button:first-of-type {
+            background-color: var(--secondary-color);
+        }
+        
+        .contact-item button:last-of-type {
+            background-color: #f44336;
+        }
+        
+        .contact-info {
+            flex: 1;
+            margin-right: 15px;
+        }
+        
+        .contact-actions {
+            display: flex;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Contact Management</h2>
+        <input type="text" id="name" placeholder="Name">
+        <input type="text" id="phone" placeholder="Phone">
+        <input type="email" id="email" placeholder="Email">
+        <button onclick="addContact()">Add Contact</button>
+        <ul id="contactList" class="contact-list"></ul>
+    </div>
+    
+    <script>
+        let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+        
+        function renderContacts() {
+            const list = document.getElementById('contactList');
+            list.innerHTML = '';
+            contacts.forEach((contact, index) => {
+                list.innerHTML += `<li class="contact-item">
+                    <div class="contact-info">
+                        ${contact.name} - ${contact.phone} - ${contact.email}
+                    </div>
+                    <div class="contact-actions">
+                        <button onclick="openEditPopup(${index})">Edit</button>
+                        <button onclick="deleteContact(${index})">Delete</button>
+                    </div>
+                </li>`;
+            });
+        }
+        
+        function addContact() {
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+            
+            if (name && phone && email) {
+                contacts.push({ name, phone, email });
+                localStorage.setItem('contacts', JSON.stringify(contacts));
+                renderContacts();
+            }
+        }
+        
+        function deleteContact(index) {
+            contacts.splice(index, 1);
+            localStorage.setItem('contacts', JSON.stringify(contacts));
+            renderContacts();
+        }
+        
+        function openEditPopup(index) {
+            const popup = window.open("", "Edit Contact", "width=400,height=300");
+            popup.document.write(`
+                <html>
+                <head>
+                    <title>Edit Contact</title>
+                </head>
+                <body>
+                    <h2>Edit Contact</h2>
+                    <input type="text" id="editName" value="${contacts[index].name}"><br>
+                    <input type="text" id="editPhone" value="${contacts[index].phone}"><br>
+                    <input type="email" id="editEmail" value="${contacts[index].email}"><br>
+                    <button onclick="window.opener.saveContact(${index}, document.getElementById('editName').value, document.getElementById('editPhone').value, document.getElementById('editEmail').value); window.close();">Save</button>
+                </body>
+                </html>
+            `);
+        }
+        
+        function saveContact(index, newName, newPhone, newEmail) {
+            if (newName && newPhone && newEmail) {
+                contacts[index] = { name: newName, phone: newPhone, email: newEmail };
+                localStorage.setItem('contacts', JSON.stringify(contacts));
+                renderContacts();
+            }
+        }
+        
+        renderContacts();
+    </script>
+</body>
+</html>
